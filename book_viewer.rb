@@ -38,7 +38,11 @@ def chapters_matching(query)
   return results if !query || query.empty?
 
   each_chapter do |number, name, contents|
-    results << {number: number, name: name} if contents.include?(query)
+    matches = {}
+    contents.split("\n\n").each_with_index do |paragraph, index|
+      matches[index] = paragraph if paragraph.include?(query)
+    end
+    results << {number: number, name: name, paragraphs: matches} if matches.any?
   end
 
   results
@@ -55,8 +59,12 @@ end
 
 helpers do
   def in_paragraphs(para_arr)
-    para_arr.map do |paragraph|
-      "<p>#{paragraph}</p>"
+    para_arr.map.with_index do |paragraph, index|
+      "<p id=paragraph#{index}>#{paragraph}</p>"
     end.join
+  end
+
+  def emphasize_result(text, query)
+    text.gsub(/(#{query})/, '<strong>\1</strong>' )
   end
 end
